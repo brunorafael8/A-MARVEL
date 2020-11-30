@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, ActivityIndicator } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import styled from 'styled-components/native';
 import LogoImg from '../../assets/logo.png';
+import CharacterCard from '../../components/CharacterCard/CharacterCard';
+import LoadingPage from '../../components/LoadingPage/LoadingPage';
 import { fetchCharacters } from '../../services/CharactersService';
-
-const { height, width } = Dimensions.get('window');
 
 const Container = styled.View`
   height: 100%;
@@ -27,25 +27,6 @@ export const List = styled.FlatList.attrs((props) => ({
   width: 100%;
 `;
 
-const CardHero = styled.View`
-  flex-direction: column;
-  margin-bottom: 10px;
-`;
-
-const CardHeroThumb = styled.ImageBackground`
-  width: ${width / 2 - 32}px;
-  height: ${Math.max(0.3, Math.random()) * width}px;
-  justify-content: flex-end;
-`;
-
-const CardHeroName = styled.Text`
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 10px;
-  background-color: black;
-`;
-
 export const Loader = styled.View`
   align-self: center;
   align-items: center;
@@ -55,7 +36,7 @@ export const Loader = styled.View`
   height: 100px;
 `;
 
-const Home = (props) => {
+const Home: React.FC = () => {
   const [characters, setCharacters] = useState(null);
   const [loadingNewItems, setLoadingNewItems] = useState<boolean>(false);
 
@@ -87,30 +68,32 @@ const Home = (props) => {
     <Container>
       <Logo source={LogoImg} />
 
-      <List
-        data={characters}
-        numColumns={2}
-        keyExtractor={(i) => `${i.id}`}
-        onEndReached={() => loadMoreData()}
-        onEndReachedThreshold={0}
-        renderItem={({ item }) => (
-          <CardHero>
-            <CardHeroThumb
-              source={{ uri: `${item.thumbnail.path}/standard_xlarge.jpg` }}>
-              <CardHeroName>{item.name}</CardHeroName>
-            </CardHeroThumb>
-          </CardHero>
-        )}
-        ListFooterComponent={() => {
-          return (
-            <Loader>
-              {loadingNewItems && (
-                <ActivityIndicator color="#BF3934" size={30} />
-              )}
-            </Loader>
-          );
-        }}
-      />
+      {!characters ? (
+        <LoadingPage />
+      ) : (
+        <List
+          data={characters}
+          numColumns={2}
+          keyExtractor={(i) => `${i.id}`}
+          onEndReached={() => loadMoreData()}
+          onEndReachedThreshold={0}
+          renderItem={({ item }) => (
+            <CharacterCard
+              thumbnail={`${item.thumbnail.path}/standard_xlarge.jpg`}
+              name={item.name}
+            />
+          )}
+          ListFooterComponent={() => {
+            return (
+              <Loader>
+                {loadingNewItems && (
+                  <ActivityIndicator color="#BF3934" size={30} />
+                )}
+              </Loader>
+            );
+          }}
+        />
+      )}
     </Container>
   );
 };
